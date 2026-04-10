@@ -23,11 +23,18 @@ function getCookie(name) {
 
 // ---- URL params (used when embedded via iframe) -------------
 // ?w=<base64word>  overrides the daily word
+// ?p=<number>      overrides the puzzle number
 function getParams() {
   const p = new URLSearchParams(window.location.search);
   return {
-    word: p.get('w') ? atob(p.get('w')).toUpperCase() : null,
+    word:   p.get('w') ? atob(p.get('w')).toUpperCase() : null,
+    puzzle: p.get('p') ? parseInt(p.get('p'), 10)       : null,
   };
+}
+
+function getPuzzleNum() {
+  const { puzzle } = getParams();
+  return (puzzle !== null && !isNaN(puzzle)) ? puzzle : dayNumber();
 }
 
 // ---- Date helpers -------------------------------------------
@@ -236,7 +243,7 @@ function buildEmojiGrid() {
 
 function buildShareText(guessCount) {
   const score = guessCount !== null ? `${guessCount}/${MAX_GUESSES}` : 'X';
-  return `Stanfordle ${score}\n\n${buildEmojiGrid()}`;
+  return `Stanfordle #${getPuzzleNum()} ${score}\n\n${buildEmojiGrid()}`;
 }
 
 let countdownInterval = null;
@@ -296,16 +303,35 @@ function openShareModal(won, guessCount) {
 
 document.getElementById('btn-share').addEventListener('click', () => {
   const btn = document.getElementById('btn-share');
-  const won = wonGame;
-  const guessCount = won ? currentRow : null;
-  navigator.clipboard.writeText(buildShareText(guessCount)).then(() => {
+  const text = buildShareText(wonGame ? currentRow : null);
+
+  function onCopied() {
     btn.textContent = 'Copied!';
     btn.classList.add('copied');
     setTimeout(() => {
       btn.textContent = 'Share Results';
       btn.classList.remove('copied');
     }, 2500);
-  });
+  }
+
+  function fallbackCopy() {
+    const el = document.createElement('textarea');
+    el.value = text;
+    el.setAttribute('readonly', '');
+    Object.assign(el.style, { position: 'fixed', opacity: '0' });
+    document.body.appendChild(el);
+    el.select();
+    el.setSelectionRange(0, el.value.length);
+    document.execCommand('copy');
+    el.remove();
+    onCopied();
+  }
+
+  if (navigator.clipboard && window.isSecureContext) {
+    navigator.clipboard.writeText(text).then(onCopied).catch(fallbackCopy);
+  } else {
+    fallbackCopy();
+  }
 });
 
 
