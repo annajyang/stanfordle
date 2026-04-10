@@ -66,7 +66,7 @@ let revealInProgress = false;
 let tileEls          = [];   // tileEls[row][col]
 
 // ---- Stats --------------------------------------------------
-const STATS_DEFAULTS = { played: 0, wins: 0, streak: 0, maxStreak: 0, dist: [0,0,0,0,0,0] };
+const STATS_DEFAULTS = { played: 0, wins: 0, streak: 0, maxStreak: 0 };
 
 function loadStats() {
   const saved = getCookie(COOKIE_STATS);
@@ -237,7 +237,6 @@ function handleWin(guessCount) {
   stats.wins++;
   stats.streak++;
   stats.maxStreak = Math.max(stats.maxStreak, stats.streak);
-  stats.dist[guessCount] = (stats.dist[guessCount] || 0) + 1;
   saveStats(stats);
 
   setTimeout(() => openModal('stats'), 2900);
@@ -307,25 +306,6 @@ function renderStats() {
   streakEl.textContent = stats.streak + (stats.streak >= 3 ? ' 🔥' : '');
 
   document.getElementById('stat-max-streak').textContent = stats.maxStreak;
-
-  // Distribution bars
-  const maxCount  = Math.max(...stats.dist, 1);
-  const lastGuess = currentRow - 1;  // 0-based index of last submitted row
-  const container = document.getElementById('guess-distribution');
-  container.innerHTML = '';
-
-  stats.dist.forEach((count, i) => {
-    const pct       = Math.max(7, Math.round((count / maxCount) * 100));
-    const highlight = gameOver && wonGame && lastGuess === i;
-    const row       = document.createElement('div');
-    row.classList.add('dist-row');
-    row.innerHTML = `
-      <div class="dist-label">${i + 1}</div>
-      <div class="dist-bar-wrap">
-        <div class="dist-bar${highlight ? ' highlight' : ''}" style="width:${pct}%">${count}</div>
-      </div>`;
-    container.appendChild(row);
-  });
 
   document.getElementById('share-section').classList.toggle('hidden', !gameOver);
 }
@@ -409,9 +389,15 @@ document.getElementById('keyboard').addEventListener('click', e => {
   if (key) handleKey(key.dataset.key);
 });
 
+function startOver() {
+  document.cookie = `${COOKIE_STATE()}=;expires=Thu, 01 Jan 1970 00:00:00 GMT;path=/`;
+  window.location.reload();
+}
+
 document.getElementById('btn-help').addEventListener('click',  () => openModal('help'));
 document.getElementById('btn-stats').addEventListener('click', () => openModal('stats'));
 document.getElementById('btn-share').addEventListener('click', shareResult);
+document.getElementById('btn-start-over').addEventListener('click', startOver);
 
 document.querySelectorAll('.modal-close').forEach(btn =>
   btn.addEventListener('click', () => closeModal(btn.dataset.modal))
