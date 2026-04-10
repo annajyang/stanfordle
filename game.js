@@ -2,9 +2,11 @@
 //  Stanfordle — Game Logic
 // =============================================================
 
-const WORD_LENGTH  = 5;
-const MAX_GUESSES  = 6;
-const COOKIE_STATE = () => `stanfordle_state_${dayNumber()}`;
+const WORD_LENGTH    = 5;
+const MAX_GUESSES    = 6;
+const COOKIE_STATE   = () => `stanfordle_state_${dayNumber()}`;
+const WIN_MESSAGES   = ['Genius!', 'Magnificent!', 'Impressive!', 'Splendid!', 'Great!', 'Phew!'];
+const KEY_PRIORITY   = { correct: 3, present: 2, absent: 1 };
 
 // ---- Cookie helpers -----------------------------------------
 function setCookie(name, value, days) {
@@ -114,7 +116,6 @@ function addLetter(letter) {
   const tile = tileEls[currentRow][currentCol];
   tile.textContent = letter;
   tile.dataset.letter = letter;
-  // Restart pop animation
   tile.classList.remove('pop');
   void tile.offsetWidth;
   tile.classList.add('pop');
@@ -150,14 +151,12 @@ function evaluateGuess(guess) {
   const guessArr = guess.split('');
   const used     = Array(WORD_LENGTH).fill(false);
 
-  // Pass 1: correct positions
   for (let i = 0; i < WORD_LENGTH; i++) {
     if (guessArr[i] === target[i]) {
       result[i] = 'correct';
       used[i]   = true;
     }
   }
-  // Pass 2: present elsewhere
   for (let i = 0; i < WORD_LENGTH; i++) {
     if (result[i] === 'correct') continue;
     for (let j = 0; j < WORD_LENGTH; j++) {
@@ -209,10 +208,8 @@ function revealRow(result, guess) {
 // ---- Win / Loss ---------------------------------------------
 function handleWin(guessCount) {
   gameOver = true;
-  const msgs = ['Genius!', 'Magnificent!', 'Impressive!', 'Splendid!', 'Great!', 'Phew!'];
-  showToast(msgs[Math.min(guessCount, msgs.length - 1)], 2500);
+  showToast(WIN_MESSAGES[Math.min(guessCount, WIN_MESSAGES.length - 1)], 2500);
 
-  // Bounce the winning row
   setTimeout(() => {
     tileEls[currentRow - 1].forEach((tile, i) => {
       setTimeout(() => tile.classList.add('bounce'), i * 100);
@@ -249,6 +246,7 @@ function buildShareText(guessCount) {
 let countdownInterval = null;
 
 function startCountdown() {
+  if (countdownInterval) clearInterval(countdownInterval);
   const el = document.getElementById('share-countdown');
   function tick() {
     const now  = new Date();
@@ -265,18 +263,15 @@ function startCountdown() {
 }
 
 function openShareModal(won, guessCount) {
-  // Result line
   const resultLine = document.getElementById('share-result-line');
   if (won) {
-    const msgs = ['Genius!', 'Magnificent!', 'Impressive!', 'Splendid!', 'Great!', 'Phew!'];
     resultLine.innerHTML =
-      `${msgs[Math.min(guessCount - 1, msgs.length - 1)]}<span class="result-sub">${guessCount} / ${MAX_GUESSES} guesses</span>`;
+      `${WIN_MESSAGES[Math.min(guessCount - 1, WIN_MESSAGES.length - 1)]}<span class="result-sub">${guessCount} / ${MAX_GUESSES} guesses</span>`;
   } else {
     resultLine.innerHTML =
       `Better luck tomorrow<span class="result-answer">The word was ${targetWord}</span>`;
   }
 
-  // Emoji grid (visual squares)
   const grid = document.getElementById('share-emoji-grid');
   grid.innerHTML = '';
   for (let r = 0; r < currentRow; r++) {
@@ -292,7 +287,6 @@ function openShareModal(won, guessCount) {
     grid.appendChild(rowEl);
   }
 
-  // Reset copy button
   const btn = document.getElementById('btn-share');
   btn.textContent = 'Share Results';
   btn.classList.remove('copied');
@@ -339,9 +333,8 @@ document.getElementById('btn-share').addEventListener('click', () => {
 function updateKey(letter, newState) {
   const key = document.querySelector(`.key[data-key="${letter}"]`);
   if (!key) return;
-  const priority = { correct: 3, present: 2, absent: 1 };
   const cur = key.dataset.state || '';
-  if ((priority[newState] || 0) > (priority[cur] || 0)) {
+  if ((KEY_PRIORITY[newState] || 0) > (KEY_PRIORITY[cur] || 0)) {
     if (cur) key.classList.remove(cur);
     key.classList.add(newState);
     key.dataset.state = newState;
