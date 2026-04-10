@@ -122,8 +122,27 @@
     </div>
   </div>
 
+  <!-- Share modal -->
+  <div id="modal-share" class="modal hidden" role="dialog" aria-modal="true" aria-labelledby="share-title">
+    <div class="modal-box">
+      <div class="modal-header">
+        <h2 id="share-title">Stanfordle</h2>
+        <button class="modal-close" data-modal="share" aria-label="Close">&times;</button>
+      </div>
+      <div class="modal-body share-body">
+        <div id="share-result-line"></div>
+        <div id="share-emoji-grid"></div>
+        <div class="share-divider"></div>
+        <div class="share-next">
+          <span class="share-next-label">Next puzzle in</span>
+          <span id="share-countdown">--:--:--</span>
+        </div>
+        <button id="btn-share">Share Results</button>
+      </div>
+    </div>
+  </div>
 
-<script src="words.js"></script>
+  <script src="words.js"></script>
   <script src="game.js"></script>
 </body>
 </html>

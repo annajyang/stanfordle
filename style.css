@@ -425,6 +425,108 @@ hr { border: none; border-top: 1px solid #ddd4c8; margin: 14px 0; }
 .example-tile.absent  { background: var(--absent);  box-shadow: none; color: var(--text-white); }
 
 
+/* ===== Share modal ===== */
+.share-body {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 18px;
+  text-align: center;
+  padding: 28px 22px 26px;
+}
+
+#share-result-line {
+  font-family: var(--font-serif);
+  font-size: 1.5rem;
+  font-weight: 700;
+  color: var(--text);
+  line-height: 1.2;
+}
+#share-result-line .result-sub {
+  display: block;
+  font-family: var(--font-sans);
+  font-size: 0.75rem;
+  font-weight: 600;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--text-light);
+  margin-top: 4px;
+}
+#share-result-line .result-answer {
+  display: block;
+  font-family: var(--font-sans);
+  font-size: 0.8rem;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+  color: var(--text-light);
+  margin-top: 2px;
+}
+
+#share-emoji-grid {
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+}
+.share-row {
+  display: flex;
+  gap: 5px;
+}
+.share-cell {
+  width: 26px;
+  height: 26px;
+  border-radius: 4px;
+  background: var(--absent);
+}
+.share-cell.correct { background: var(--correct); }
+.share-cell.present { background: var(--present); }
+
+.share-divider {
+  width: 100%;
+  border-top: 1px solid #e8e0d6;
+}
+
+.share-next {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 4px;
+}
+.share-next-label {
+  font-size: 0.65rem;
+  text-transform: uppercase;
+  letter-spacing: 0.14em;
+  color: var(--text-light);
+  font-weight: 600;
+}
+#share-countdown {
+  font-family: var(--font-serif);
+  font-size: 2rem;
+  font-weight: 700;
+  color: var(--cardinal);
+  letter-spacing: 0.04em;
+  line-height: 1;
+}
+
+#btn-share {
+  background: linear-gradient(135deg, var(--cardinal) 0%, var(--cardinal-dark) 100%);
+  color: var(--text-white);
+  border: none;
+  border-radius: 24px;
+  padding: 13px 40px;
+  font-family: var(--font-sans);
+  font-size: 0.9rem;
+  font-weight: 700;
+  letter-spacing: 0.05em;
+  cursor: pointer;
+  width: 100%;
+  transition: filter var(--transition), transform 0.1s;
+}
+#btn-share:hover  { filter: brightness(1.1); }
+#btn-share:active { transform: scale(0.97); }
+#btn-share.copied {
+  background: linear-gradient(135deg, var(--correct), #3d9b65);
+}
+
 .hidden { display: none !important; }
 
 /* ===== Responsive ===== */

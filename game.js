@@ -211,12 +211,103 @@ function handleWin(guessCount) {
       setTimeout(() => tile.classList.add('bounce'), i * 100);
     });
   }, 250);
+
+  setTimeout(() => openShareModal(true, guessCount + 1), 2900);
 }
 
 function handleLoss() {
   gameOver = true;
   showToast(targetWord, 4000);
+  setTimeout(() => openShareModal(false, null), 4500);
 }
+
+// ---- Share modal --------------------------------------------
+function buildEmojiGrid() {
+  const rows = [];
+  for (let r = 0; r < currentRow; r++) {
+    const line = tileEls[r].map(tile => {
+      const s = tile.dataset.state;
+      return s === 'correct' ? '🟩' : s === 'present' ? '🟨' : '⬛';
+    }).join('');
+    rows.push(line);
+  }
+  return rows.join('\n');
+}
+
+function buildShareText(guessCount) {
+  const score = guessCount !== null ? `${guessCount}/${MAX_GUESSES}` : 'X';
+  return `Stanfordle ${score}\n\n${buildEmojiGrid()}`;
+}
+
+let countdownInterval = null;
+
+function startCountdown() {
+  const el = document.getElementById('share-countdown');
+  function tick() {
+    const now  = new Date();
+    const next = new Date(now);
+    next.setHours(24, 0, 0, 0);
+    const diff = next - now;
+    const h = String(Math.floor(diff / 3600000)).padStart(2, '0');
+    const m = String(Math.floor((diff % 3600000) / 60000)).padStart(2, '0');
+    const s = String(Math.floor((diff % 60000) / 1000)).padStart(2, '0');
+    el.textContent = `${h}:${m}:${s}`;
+  }
+  tick();
+  countdownInterval = setInterval(tick, 1000);
+}
+
+function openShareModal(won, guessCount) {
+  // Result line
+  const resultLine = document.getElementById('share-result-line');
+  if (won) {
+    const msgs = ['Genius!', 'Magnificent!', 'Impressive!', 'Splendid!', 'Great!', 'Phew!'];
+    resultLine.innerHTML =
+      `${msgs[Math.min(guessCount - 1, msgs.length - 1)]}<span class="result-sub">${guessCount} / ${MAX_GUESSES} guesses</span>`;
+  } else {
+    resultLine.innerHTML =
+      `Better luck tomorrow<span class="result-answer">The word was ${targetWord}</span>`;
+  }
+
+  // Emoji grid (visual squares)
+  const grid = document.getElementById('share-emoji-grid');
+  grid.innerHTML = '';
+  for (let r = 0; r < currentRow; r++) {
+    const rowEl = document.createElement('div');
+    rowEl.classList.add('share-row');
+    tileEls[r].forEach(tile => {
+      const cell = document.createElement('div');
+      cell.classList.add('share-cell');
+      const s = tile.dataset.state;
+      if (s === 'correct' || s === 'present') cell.classList.add(s);
+      rowEl.appendChild(cell);
+    });
+    grid.appendChild(rowEl);
+  }
+
+  // Reset copy button
+  const btn = document.getElementById('btn-share');
+  btn.textContent = 'Share Results';
+  btn.classList.remove('copied');
+
+  startCountdown();
+  openModal('share');
+}
+
+document.getElementById('btn-share').addEventListener('click', () => {
+  const btn = document.getElementById('btn-share');
+  const won = wonGame;
+  const guessCount = won ? currentRow : null;
+  navigator.clipboard.writeText(buildShareText(guessCount)).then(() => {
+    btn.textContent = 'Copied!';
+    btn.classList.add('copied');
+    setTimeout(() => {
+      btn.textContent = 'Share Results';
+      btn.classList.remove('copied');
+    }, 2500);
+  });
+});
+
 
 // ---- Keyboard state -----------------------------------------
 function updateKey(letter, newState) {
@@ -254,9 +345,6 @@ function showToast(message, duration = 1800) {
 // ---- Modals -------------------------------------------------
 function openModal(name) {
   document.getElementById(`modal-${name}`).classList.remove('hidden');
-}
-function closeModal(name) {
-  document.getElementById(`modal-${name}`).classList.add('hidden');
 }
 
 // ---- Restore saved game state ------------------------------
@@ -304,6 +392,14 @@ document.getElementById('btn-start-over').addEventListener('click', () => {
   document.cookie = `${COOKIE_STATE()}=;expires=Thu, 01 Jan 1970 00:00:00 GMT;path=/`;
   location.reload();
 });
+
+function closeModal(name) {
+  if (name === 'share' && countdownInterval) {
+    clearInterval(countdownInterval);
+    countdownInterval = null;
+  }
+  document.getElementById(`modal-${name}`).classList.add('hidden');
+}
 
 document.querySelectorAll('.modal-close').forEach(btn =>
   btn.addEventListener('click', () => closeModal(btn.dataset.modal))
