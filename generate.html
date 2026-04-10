@@ -1,0 +1,376 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Stanfordle — Puzzle Generator</title>
+  <style>
+    :root {
+      --cardinal:       #8c1515;
+      --cardinal-dark:  #5f0a0a;
+      --bg:             #f0e9de;
+      --bg-card:        #faf6f1;
+      --text:           #1e1b18;
+      --text-light:     #6b6560;
+      --text-white:     #ffffff;
+      --correct:        #2d7a4f;
+      --radius:         14px;
+      --font-sans:      'Helvetica Neue', Arial, sans-serif;
+      --font-serif:     Georgia, 'Times New Roman', serif;
+      --transition:     0.18s ease;
+    }
+
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      font-family: var(--font-sans);
+      background: var(--bg);
+      background-image: repeating-linear-gradient(
+        0deg, transparent, transparent 39px,
+        rgba(0,0,0,0.025) 39px, rgba(0,0,0,0.025) 40px
+      );
+      color: var(--text);
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+    }
+
+    header {
+      width: 100%;
+      background: linear-gradient(135deg, var(--cardinal) 0%, var(--cardinal-dark) 100%);
+      color: var(--text-white);
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      padding: 18px 20px 14px;
+      box-shadow: 0 2px 12px rgba(0,0,0,0.25);
+    }
+    header h1 {
+      font-family: var(--font-serif);
+      font-size: 1.4rem;
+      font-weight: 700;
+      letter-spacing: 0.04em;
+    }
+    header p {
+      font-size: 0.6rem;
+      letter-spacing: 0.18em;
+      text-transform: uppercase;
+      color: rgba(255,255,255,0.6);
+      margin-top: 3px;
+    }
+
+    main {
+      width: 100%;
+      max-width: 560px;
+      padding: 32px 16px 40px;
+      display: flex;
+      flex-direction: column;
+      gap: 20px;
+    }
+
+    .card {
+      background: var(--bg-card);
+      border-radius: var(--radius);
+      box-shadow: 0 4px 28px rgba(0,0,0,0.10);
+      overflow: hidden;
+    }
+
+    .card-header {
+      background: linear-gradient(135deg, var(--cardinal) 0%, var(--cardinal-dark) 100%);
+      padding: 12px 20px;
+    }
+    .card-header h2 {
+      color: var(--text-white);
+      font-family: var(--font-serif);
+      font-size: 0.95rem;
+      letter-spacing: 0.06em;
+    }
+
+    .card-body {
+      padding: 22px 20px;
+      display: flex;
+      flex-direction: column;
+      gap: 16px;
+    }
+
+    .field {
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+    }
+    .field label {
+      font-size: 0.72rem;
+      font-weight: 700;
+      letter-spacing: 0.1em;
+      text-transform: uppercase;
+      color: var(--text-light);
+    }
+    .field input {
+      font-family: var(--font-sans);
+      font-size: 0.95rem;
+      padding: 10px 14px;
+      border: 1.5px solid #ddd4c8;
+      border-radius: 8px;
+      background: var(--bg);
+      color: var(--text);
+      outline: none;
+      transition: border-color var(--transition);
+    }
+    .field input:focus { border-color: var(--cardinal); }
+    .field input.error { border-color: #c0392b; }
+    .field .hint {
+      font-size: 0.7rem;
+      color: var(--text-light);
+    }
+
+    .row-2 {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 14px;
+    }
+
+    .btn-generate {
+      background: linear-gradient(135deg, var(--cardinal) 0%, var(--cardinal-dark) 100%);
+      color: var(--text-white);
+      border: none;
+      border-radius: 8px;
+      padding: 12px 24px;
+      font-family: var(--font-sans);
+      font-size: 0.88rem;
+      font-weight: 700;
+      letter-spacing: 0.05em;
+      cursor: pointer;
+      transition: filter var(--transition), transform 0.1s;
+      align-self: flex-start;
+    }
+    .btn-generate:hover  { filter: brightness(1.12); }
+    .btn-generate:active { transform: scale(0.97); }
+
+    .error-msg {
+      font-size: 0.78rem;
+      color: #c0392b;
+      font-weight: 600;
+      display: none;
+    }
+    .error-msg.visible { display: block; }
+
+    /* Output card */
+    #output-card { display: none; }
+    #output-card.visible { display: block; }
+
+    .output-label {
+      font-size: 0.72rem;
+      font-weight: 700;
+      letter-spacing: 0.1em;
+      text-transform: uppercase;
+      color: var(--text-light);
+      margin-bottom: 8px;
+    }
+
+    .code-wrap {
+      position: relative;
+    }
+    .code-box {
+      font-family: 'Courier New', Courier, monospace;
+      font-size: 0.78rem;
+      line-height: 1.6;
+      background: #f5f0ea;
+      border: 1.5px solid #ddd4c8;
+      border-radius: 8px;
+      padding: 14px;
+      white-space: pre;
+      overflow-x: auto;
+      color: var(--text);
+      user-select: all;
+      cursor: text;
+    }
+
+    .btn-copy {
+      position: absolute;
+      top: 8px;
+      right: 8px;
+      background: var(--cardinal);
+      color: var(--text-white);
+      border: none;
+      border-radius: 6px;
+      padding: 5px 12px;
+      font-family: var(--font-sans);
+      font-size: 0.7rem;
+      font-weight: 700;
+      letter-spacing: 0.05em;
+      cursor: pointer;
+      transition: filter var(--transition);
+    }
+    .btn-copy:hover  { filter: brightness(1.15); }
+    .btn-copy.copied { background: var(--correct); }
+
+    .meta-row {
+      display: flex;
+      gap: 20px;
+      padding: 14px 0 0;
+      border-top: 1px solid #e8e0d6;
+      margin-top: 6px;
+    }
+    .meta-item {
+      display: flex;
+      flex-direction: column;
+      gap: 2px;
+    }
+    .meta-item span:first-child {
+      font-size: 0.65rem;
+      text-transform: uppercase;
+      letter-spacing: 0.1em;
+      color: var(--text-light);
+      font-weight: 700;
+    }
+    .meta-item span:last-child {
+      font-size: 0.88rem;
+      font-weight: 700;
+      color: var(--cardinal);
+      font-family: var(--font-serif);
+    }
+  </style>
+</head>
+<body>
+
+  <header>
+    <h1>Stanfordle Puzzle Generator</h1>
+    <p>Internal use only</p>
+  </header>
+
+  <main>
+    <!-- Input card -->
+    <div class="card">
+      <div class="card-header"><h2>Puzzle Settings</h2></div>
+      <div class="card-body">
+        <div class="row-2">
+          <div class="field">
+            <label>Word</label>
+            <input type="text" id="word-input" placeholder="ROBLE" maxlength="5" autocomplete="off" autocorrect="off" spellcheck="false" />
+            <span class="hint">Exactly 5 letters</span>
+          </div>
+          <div class="field">
+            <label>Puzzle #</label>
+            <input type="number" id="puzzle-num" placeholder="1" min="1" />
+            <span class="hint">Displayed puzzle number</span>
+          </div>
+        </div>
+        <span class="error-msg" id="error-msg"></span>
+        <button class="btn-generate" id="btn-generate">Generate Embed Code</button>
+      </div>
+    </div>
+
+    <!-- Output card -->
+    <div class="card" id="output-card">
+      <div class="card-header"><h2>Embed Code</h2></div>
+      <div class="card-body">
+        <div class="output-label">WordPress / Custom HTML block</div>
+        <div class="code-wrap">
+          <pre class="code-box" id="code-output"></pre>
+          <button class="btn-copy" id="btn-copy">Copy</button>
+        </div>
+        <div class="meta-row">
+          <div class="meta-item">
+            <span>Word</span>
+            <span id="meta-word">—</span>
+          </div>
+          <div class="meta-item">
+            <span>Puzzle #</span>
+            <span id="meta-puzzle">—</span>
+          </div>
+          <div class="meta-item">
+            <span>Encoded</span>
+            <span id="meta-encoded">—</span>
+          </div>
+        </div>
+      </div>
+    </div>
+  </main>
+
+  <script>
+    const BASE_URL   = 'https://annajyang.github.io/stanfordle/';
+
+    const wordInput  = document.getElementById('word-input');
+    const puzzleNum  = document.getElementById('puzzle-num');
+    const errorMsg   = document.getElementById('error-msg');
+    const outputCard = document.getElementById('output-card');
+    const codeOutput = document.getElementById('code-output');
+    const btnCopy    = document.getElementById('btn-copy');
+
+    // Auto-uppercase the word field
+    wordInput.addEventListener('input', () => {
+      const pos = wordInput.selectionStart;
+      wordInput.value = wordInput.value.toUpperCase().replace(/[^A-Z]/g, '');
+      wordInput.setSelectionRange(pos, pos);
+    });
+
+    function showError(msg) {
+      errorMsg.textContent = msg;
+      errorMsg.classList.add('visible');
+    }
+    function clearError() {
+      errorMsg.classList.remove('visible');
+    }
+
+    document.getElementById('btn-generate').addEventListener('click', () => {
+      clearError();
+
+      const word   = wordInput.value.trim().toUpperCase();
+      const num    = puzzleNum.value.trim();
+
+      if (!/^[A-Z]{5}$/.test(word)) {
+        showError('Word must be exactly 5 letters (A–Z).');
+        wordInput.classList.add('error');
+        wordInput.focus();
+        return;
+      }
+      wordInput.classList.remove('error');
+
+      if (!num || isNaN(num) || parseInt(num) < 1) {
+        showError('Puzzle number must be a positive integer.');
+        puzzleNum.classList.add('error');
+        puzzleNum.focus();
+        return;
+      }
+      puzzleNum.classList.remove('error');
+
+      const encoded   = btoa(word);
+      const gameUrl   = `${BASE_URL}?w=${encoded}&p=${parseInt(num)}`;
+      const iframeCode = `<div style="max-width:520px; margin:0 auto;">\n  <iframe\n    src="${gameUrl}"\n    width="100%"\n    height="640"\n    frameborder="0"\n    scrolling="no"\n    style="border:none; border-radius:8px; overflow:hidden;"\n    title="Stanfordle #${parseInt(num)}"\n    allow="clipboard-write">\n  </iframe>\n</div>`;
+
+      codeOutput.textContent = iframeCode;
+      document.getElementById('meta-word').textContent    = word;
+      document.getElementById('meta-puzzle').textContent  = `#${parseInt(num)}`;
+      document.getElementById('meta-encoded').textContent = encoded;
+
+      outputCard.classList.add('visible');
+      outputCard.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+
+      // Reset copy button
+      btnCopy.textContent = 'Copy';
+      btnCopy.classList.remove('copied');
+    });
+
+    btnCopy.addEventListener('click', () => {
+      navigator.clipboard.writeText(codeOutput.textContent).then(() => {
+        btnCopy.textContent = 'Copied!';
+        btnCopy.classList.add('copied');
+        setTimeout(() => {
+          btnCopy.textContent = 'Copy';
+          btnCopy.classList.remove('copied');
+        }, 2500);
+      });
+    });
+
+    // Allow Enter key to trigger generate
+    [wordInput, puzzleNum].forEach(el =>
+      el.addEventListener('keydown', e => {
+        if (e.key === 'Enter') document.getElementById('btn-generate').click();
+      })
+    );
+  </script>
+
+</body>
+</html>
