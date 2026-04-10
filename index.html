@@ -18,14 +18,6 @@
       <h1>Stanfordle</h1>
       <span class="header-sub" id="puzzle-label">Daily Word Game</span>
     </div>
-    <button id="btn-stats" class="icon-btn" aria-label="Statistics">
-      <!-- bar chart icon -->
-      <svg width="20" height="20" viewBox="0 0 20 20" fill="currentColor" aria-hidden="true">
-        <rect x="1"  y="10" width="4" height="9" rx="1"/>
-        <rect x="8"  y="5"  width="4" height="14" rx="1"/>
-        <rect x="15" y="1"  width="4" height="18" rx="1"/>
-      </svg>
-    </button>
   </header>
 
   <!-- Game board -->
@@ -125,42 +117,6 @@
     </div>
   </div>
 
-  <!-- Stats modal -->
-  <div id="modal-stats" class="modal hidden" role="dialog" aria-modal="true" aria-labelledby="stats-title">
-    <div class="modal-box">
-      <div class="modal-header">
-        <h2 id="stats-title">Statistics</h2>
-        <button class="modal-close" data-modal="stats" aria-label="Close">&times;</button>
-      </div>
-      <div class="modal-body">
-        <div class="stats-grid">
-          <div class="stat">
-            <span class="stat-num" id="stat-played">0</span>
-            <span class="stat-label">Played</span>
-          </div>
-          <div class="stat">
-            <span class="stat-num" id="stat-win-pct">0</span>
-            <span class="stat-label">Win %</span>
-          </div>
-          <div class="stat">
-            <span class="stat-num" id="stat-streak">0</span>
-            <span class="stat-label">Streak</span>
-          </div>
-          <div class="stat">
-            <span class="stat-num" id="stat-max-streak">0</span>
-            <span class="stat-label">Best Streak</span>
-          </div>
-        </div>
-
-        <div id="share-section" class="hidden">
-          <button id="btn-share">Share Result &#128279;</button>
-        </div>
-        <div class="start-over-section">
-          <button id="btn-start-over">Start Over</button>
-        </div>
-      </div>
-    </div>
-  </div>
 
   <script src="words.js"></script>
   <script src="game.js"></script>

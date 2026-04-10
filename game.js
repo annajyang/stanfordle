@@ -5,7 +5,6 @@
 const WORD_LENGTH  = 5;
 const MAX_GUESSES  = 6;
 const COOKIE_STATE = () => `stanfordle_state_${getPuzzleNum()}`;
-const COOKIE_STATS = 'stanfordle_stats';
 
 // ---- Cookie helpers -----------------------------------------
 function setCookie(name, value, days) {
@@ -64,18 +63,6 @@ let gameOver         = false;
 let wonGame          = false;
 let revealInProgress = false;
 let tileEls          = [];   // tileEls[row][col]
-
-// ---- Stats --------------------------------------------------
-const STATS_DEFAULTS = { played: 0, wins: 0, streak: 0, maxStreak: 0 };
-
-function loadStats() {
-  const saved = getCookie(COOKIE_STATS);
-  return saved ? { ...STATS_DEFAULTS, ...saved } : { ...STATS_DEFAULTS };
-}
-
-function saveStats(stats) {
-  setCookie(COOKIE_STATS, stats, 365);
-}
 
 // ---- Persisted game state -----------------------------------
 function loadGameState() {
@@ -232,26 +219,12 @@ function handleWin(guessCount) {
     });
   }, 250);
 
-  const stats = loadStats();
-  stats.played++;
-  stats.wins++;
-  stats.streak++;
-  stats.maxStreak = Math.max(stats.maxStreak, stats.streak);
-  saveStats(stats);
-
-  setTimeout(() => openModal('stats'), 2900);
 }
 
 function handleLoss() {
   gameOver = true;
   showToast(targetWord, 4000);
 
-  const stats = loadStats();
-  stats.played++;
-  stats.streak = 0;
-  saveStats(stats);
-
-  setTimeout(() => openModal('stats'), 4300);
 }
 
 // ---- Keyboard state -----------------------------------------
@@ -289,65 +262,12 @@ function showToast(message, duration = 1800) {
 
 // ---- Modals -------------------------------------------------
 function openModal(name) {
-  if (name === 'stats') renderStats();
   document.getElementById(`modal-${name}`).classList.remove('hidden');
 }
 function closeModal(name) {
   document.getElementById(`modal-${name}`).classList.add('hidden');
 }
 
-function renderStats() {
-  const stats = loadStats();
-  document.getElementById('stat-played').textContent    = stats.played;
-  document.getElementById('stat-win-pct').textContent   =
-    stats.played ? Math.round((stats.wins / stats.played) * 100) : 0;
-
-  const streakEl = document.getElementById('stat-streak');
-  streakEl.textContent = stats.streak + (stats.streak >= 3 ? ' 🔥' : '');
-
-  document.getElementById('stat-max-streak').textContent = stats.maxStreak;
-
-  document.getElementById('share-section').classList.toggle('hidden', !gameOver);
-}
-
-// ---- Share --------------------------------------------------
-function buildShareText() {
-  const score  = (gameOver && wonGame) ? currentRow : 'X';
-  const header = `Stanfordle #${getPuzzleNum()} ${score}/${MAX_GUESSES}`;
-
-  const emojiRows = [];
-  const revealedRows = gameOver ? currentRow : currentRow;
-  for (let r = 0; r < Math.min(revealedRows, MAX_GUESSES); r++) {
-    const emojis = tileEls[r].map(tile => {
-      const s = tile.dataset.state;
-      return s === 'correct' ? '🟩' : s === 'present' ? '🟨' : '⬛';
-    }).join('');
-    emojiRows.push(emojis);
-  }
-  return [header, ...emojiRows].join('\n');
-}
-
-function shareResult() {
-  const text = buildShareText();
-  if (navigator.clipboard) {
-    navigator.clipboard.writeText(text)
-      .then(() => showToast('Copied to clipboard!'))
-      .catch(() => fallbackCopy(text));
-  } else {
-    fallbackCopy(text);
-  }
-}
-
-function fallbackCopy(text) {
-  const el = document.createElement('textarea');
-  el.value = text;
-  Object.assign(el.style, { position: 'fixed', opacity: '0' });
-  document.body.appendChild(el);
-  el.select();
-  document.execCommand('copy');
-  el.remove();
-  showToast('Copied to clipboard!');
-}
 
 // ---- Restore saved game state ------------------------------
 function restoreGameState(saved) {
@@ -389,15 +309,7 @@ document.getElementById('keyboard').addEventListener('click', e => {
   if (key) handleKey(key.dataset.key);
 });
 
-function startOver() {
-  document.cookie = `${COOKIE_STATE()}=;expires=Thu, 01 Jan 1970 00:00:00 GMT;path=/`;
-  window.location.reload();
-}
-
-document.getElementById('btn-help').addEventListener('click',  () => openModal('help'));
-document.getElementById('btn-stats').addEventListener('click', () => openModal('stats'));
-document.getElementById('btn-share').addEventListener('click', shareResult);
-document.getElementById('btn-start-over').addEventListener('click', startOver);
+document.getElementById('btn-help').addEventListener('click', () => openModal('help'));
 
 document.querySelectorAll('.modal-close').forEach(btn =>
   btn.addEventListener('click', () => closeModal(btn.dataset.modal))
