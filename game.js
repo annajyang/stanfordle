@@ -212,13 +212,13 @@ function handleWin(guessCount) {
     });
   }, 250);
 
-  setTimeout(() => openShareModal(true, guessCount + 1), 2900);
+  setTimeout(() => openShareModal(true, guessCount + 1), 1600);
 }
 
 function handleLoss() {
   gameOver = true;
-  showToast(targetWord, 4000);
-  setTimeout(() => openShareModal(false, null), 4500);
+  showToast(targetWord, 2500);
+  setTimeout(() => openShareModal(false, null), 2000);
 }
 
 // ---- Share modal --------------------------------------------
