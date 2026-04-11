@@ -4,24 +4,9 @@
 
 const WORD_LENGTH    = 5;
 const MAX_GUESSES    = 6;
-const COOKIE_STATE   = () => `stanfordle_state_${dayNumber()}`;
+const STORAGE_KEY    = () => `stanfordle_state_${dayNumber()}`;
 const WIN_MESSAGES   = ['Genius!', 'Magnificent!', 'Impressive!', 'Splendid!', 'Great!', 'Phew!'];
 const KEY_PRIORITY   = { correct: 3, present: 2, absent: 1 };
-
-// ---- Cookie helpers -----------------------------------------
-function setCookie(name, value, days) {
-  const exp = new Date(Date.now() + days * 864e5).toUTCString();
-  document.cookie =
-    `${name}=${encodeURIComponent(JSON.stringify(value))};expires=${exp};path=/;SameSite=Lax`;
-}
-
-function getCookie(name) {
-  const re = new RegExp('(?:^|; )' + name.replace(/[.*+?^${}()|[\]\\]/g, '\\$&') + '=([^;]*)');
-  const m  = document.cookie.match(re);
-  if (!m) return null;
-  try { return JSON.parse(decodeURIComponent(m[1])); }
-  catch { return null; }
-}
 
 // ---- URL params (used when embedded via iframe) -------------
 // ?w=<base64word>  overrides the daily word
@@ -68,8 +53,12 @@ let tileEls          = [];   // tileEls[row][col]
 
 // ---- Persisted game state -----------------------------------
 function loadGameState() {
-  const saved = getCookie(COOKIE_STATE());
-  if (saved && saved.date === todayKey()) return saved;
+  try {
+    const raw = localStorage.getItem(STORAGE_KEY());
+    if (!raw) return null;
+    const saved = JSON.parse(raw);
+    if (saved && saved.date === todayKey()) return saved;
+  } catch {}
   return null;
 }
 
@@ -77,7 +66,9 @@ function saveGameState() {
   const rows = tileEls.map(row =>
     row.map(t => ({ letter: t.textContent, state: t.dataset.state || '' }))
   );
-  setCookie(COOKIE_STATE(), { date: todayKey(), currentRow, currentCol, gameOver, wonGame, rows }, 2);
+  try {
+    localStorage.setItem(STORAGE_KEY(), JSON.stringify({ date: todayKey(), currentRow, currentCol, gameOver, wonGame, rows }));
+  } catch {}
 }
 
 // ---- Build board --------------------------------------------
@@ -412,7 +403,7 @@ document.getElementById('keyboard').addEventListener('click', e => {
 
 document.getElementById('btn-help').addEventListener('click', () => openModal('help'));
 document.getElementById('btn-start-over').addEventListener('click', () => {
-  document.cookie = `${COOKIE_STATE()}=;expires=Thu, 01 Jan 1970 00:00:00 GMT;path=/`;
+  try { localStorage.removeItem(STORAGE_KEY()); } catch {}
   location.reload();
 });
 
