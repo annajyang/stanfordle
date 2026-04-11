@@ -238,9 +238,13 @@ function buildEmojiGrid() {
   return rows.join('\n');
 }
 
+function getGamePageUrl() {
+  return 'https://stanforddaily.com/category/games/stanfordle/';
+}
+
 function buildShareText(guessCount) {
   const score = guessCount !== null ? `${guessCount}/${MAX_GUESSES}` : 'X';
-  return `Stanfordle #${getPuzzleNum()} ${score}\n\n${buildEmojiGrid()}`;
+  return `Stanfordle #${getPuzzleNum()} ${score}\n\n${buildEmojiGrid()}\n\n${getGamePageUrl()}`;
 }
 
 let countdownInterval = null;
