@@ -72,12 +72,26 @@ header {
   box-shadow: 0 2px 12px rgba(0,0,0,0.25);
 }
 
+.header-left {
+  flex: 1;
+  display: flex;
+  justify-content: flex-start;
+  align-items: center;
+}
+
 .header-center {
   display: flex;
   flex-direction: column;
   align-items: center;
   line-height: 1;
   gap: 2px;
+}
+
+.header-right {
+  flex: 1;
+  display: flex;
+  justify-content: flex-end;
+  align-items: center;
 }
 header h1 {
   font-family: var(--font-serif);

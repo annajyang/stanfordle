@@ -199,6 +199,7 @@ function revealRow(result, guess) {
 // ---- Win / Loss ---------------------------------------------
 function handleWin(guessCount) {
   gameOver = true;
+  showPersistentShareBtn();
   showToast(WIN_MESSAGES[Math.min(guessCount, WIN_MESSAGES.length - 1)], 2500);
 
   setTimeout(() => {
@@ -212,6 +213,7 @@ function handleWin(guessCount) {
 
 function handleLoss() {
   gameOver = true;
+  showPersistentShareBtn();
   showToast(targetWord, 2500);
   setTimeout(() => openShareModal(false, null), 2000);
 }
@@ -382,6 +384,7 @@ function restoreGameState(saved) {
 
   currentCol   = 0;
   currentGuess = [];
+  if (gameOver) showPersistentShareBtn();
 }
 
 // ---- Event listeners ----------------------------------------
@@ -399,6 +402,14 @@ document.addEventListener('keydown', e => {
 document.getElementById('keyboard').addEventListener('click', e => {
   const key = e.target.closest('.key');
   if (key) handleKey(key.dataset.key);
+});
+
+function showPersistentShareBtn() {
+  document.getElementById('btn-open-share').classList.remove('hidden');
+}
+
+document.getElementById('btn-open-share').addEventListener('click', () => {
+  openShareModal(wonGame, wonGame ? currentRow : null);
 });
 
 document.getElementById('btn-help').addEventListener('click', () => openModal('help'));
