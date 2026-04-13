@@ -4,7 +4,7 @@
 
 const WORD_LENGTH    = 5;
 const MAX_GUESSES    = 6;
-const STORAGE_KEY    = () => `stanfordle_state_${dayNumber()}`;
+const STORAGE_KEY    = () => `stanfordle_state_${getPuzzleNum()}`;
 const WIN_MESSAGES   = ['Genius!', 'Magnificent!', 'Impressive!', 'Splendid!', 'Great!', 'Phew!'];
 const KEY_PRIORITY   = { correct: 3, present: 2, absent: 1 };
 
@@ -21,24 +21,14 @@ function getParams() {
 
 function getPuzzleNum() {
   const { puzzle } = getParams();
-  return (puzzle !== null && !isNaN(puzzle)) ? puzzle : dayNumber();
+  return (puzzle !== null && !isNaN(puzzle)) ? puzzle : 0;
 }
 
-// ---- Date helpers -------------------------------------------
-function todayKey() {
-  const d = new Date();
-  return `${d.getFullYear()}-${d.getMonth()}-${d.getDate()}`;
-}
-
-function dayNumber() {
-  return Math.floor((Date.now() - new Date(2024, 0, 1)) / 86400000);
-}
-
-// ---- Daily answer -------------------------------------------
+// ---- Answer (from URL param) --------------------------------
 function getDailyAnswer() {
   const { word } = getParams();
   if (word && word.length === 5 && /^[A-Z]+$/.test(word)) return word;
-  return FINAL_ANSWERS[dayNumber() % FINAL_ANSWERS.length];
+  return '';
 }
 
 // ---- Game state ---------------------------------------------
@@ -56,8 +46,7 @@ function loadGameState() {
   try {
     const raw = localStorage.getItem(STORAGE_KEY());
     if (!raw) return null;
-    const saved = JSON.parse(raw);
-    if (saved && saved.date === todayKey()) return saved;
+    return JSON.parse(raw);
   } catch {}
   return null;
 }
@@ -67,7 +56,7 @@ function saveGameState() {
     row.map(t => ({ letter: t.textContent, state: t.dataset.state || '' }))
   );
   try {
-    localStorage.setItem(STORAGE_KEY(), JSON.stringify({ date: todayKey(), currentRow, currentCol, gameOver, wonGame, rows }));
+    localStorage.setItem(STORAGE_KEY(), JSON.stringify({ currentRow, currentCol, gameOver, wonGame, rows }));
   } catch {}
 }
 
@@ -240,24 +229,6 @@ function buildShareText(guessCount) {
   return `Stanfordle #${getPuzzleNum()} ${score}\n\n${buildEmojiGrid()}\n\n${getGamePageUrl()}`;
 }
 
-let countdownInterval = null;
-
-function startCountdown() {
-  if (countdownInterval) clearInterval(countdownInterval);
-  const el = document.getElementById('share-countdown');
-  function tick() {
-    const now  = new Date();
-    const next = new Date(now);
-    next.setHours(24, 0, 0, 0);
-    const diff = next - now;
-    const h = String(Math.floor(diff / 3600000)).padStart(2, '0');
-    const m = String(Math.floor((diff % 3600000) / 60000)).padStart(2, '0');
-    const s = String(Math.floor((diff % 60000) / 1000)).padStart(2, '0');
-    el.textContent = `${h}:${m}:${s}`;
-  }
-  tick();
-  countdownInterval = setInterval(tick, 1000);
-}
 
 function openShareModal(won, guessCount) {
   const resultLine = document.getElementById('share-result-line');
@@ -266,7 +237,7 @@ function openShareModal(won, guessCount) {
       `${WIN_MESSAGES[Math.min(guessCount - 1, WIN_MESSAGES.length - 1)]}<span class="result-sub">${guessCount} / ${MAX_GUESSES} guesses</span>`;
   } else {
     resultLine.innerHTML =
-      `Better luck tomorrow<span class="result-answer">The word was ${targetWord}</span>`;
+      `Nice try!<span class="result-answer">The word was ${targetWord}</span>`;
   }
 
   const grid = document.getElementById('share-emoji-grid');
@@ -288,7 +259,7 @@ function openShareModal(won, guessCount) {
   btn.textContent = 'Share Results';
   btn.classList.remove('copied');
 
-  startCountdown();
+
   openModal('share');
 }
 
@@ -419,10 +390,6 @@ document.getElementById('btn-start-over').addEventListener('click', () => {
 });
 
 function closeModal(name) {
-  if (name === 'share' && countdownInterval) {
-    clearInterval(countdownInterval);
-    countdownInterval = null;
-  }
   document.getElementById(`modal-${name}`).classList.add('hidden');
 }
 
