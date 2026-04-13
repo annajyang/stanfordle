@@ -4,7 +4,6 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Stanfordle — Puzzle Generator</title>
-  <link rel="icon" href="assets/logo.png" type="image/png">
   <style>
     :root {
       --cardinal:       #8c1515;
@@ -291,7 +290,7 @@
   </main>
 
   <script>
-    const BASE_URL   = 'https://annajyang.github.io/stanfordle/';
+    const BASE_URL   = new URL('index.html', location.href).href;
 
     const wordInput  = document.getElementById('word-input');
     const puzzleNum  = document.getElementById('puzzle-num');
