@@ -492,32 +492,6 @@ hr { border: none; border-top: 1px solid #ddd4c8; margin: 14px 0; }
 .share-cell.correct { background: var(--correct); }
 .share-cell.present { background: var(--present); }
 
-.share-divider {
-  width: 100%;
-  border-top: 1px solid #e8e0d6;
-}
-
-.share-next {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  gap: 4px;
-}
-.share-next-label {
-  font-size: 0.65rem;
-  text-transform: uppercase;
-  letter-spacing: 0.14em;
-  color: var(--text-light);
-  font-weight: 600;
-}
-#share-countdown {
-  font-family: var(--font-serif);
-  font-size: 2rem;
-  font-weight: 700;
-  color: var(--cardinal);
-  letter-spacing: 0.04em;
-  line-height: 1;
-}
 
 #btn-share {
   background: linear-gradient(135deg, var(--cardinal) 0%, var(--cardinal-dark) 100%);
