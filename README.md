@@ -21,7 +21,7 @@ generate.html   — puzzle generator UI
 
 ### 1. Generate the embed code
 
-Open `[https://thestanforddaily.github.io/stanfordle/generate.html](https://thestanforddaily.github.io/stanfordle/generate.html)` in any browser. Enter:
+Open [https://thestanforddaily.github.io/stanfordle/generate.html](https://thestanforddaily.github.io/stanfordle/generate.html) in any browser. Enter:
 
 - **Word** — today's 5-letter answer
 - **Puzzle #** — increment by one each day
