@@ -221,7 +221,7 @@ function buildEmojiGrid() {
 }
 
 function getGamePageUrl() {
-  return 'https://stanforddaily.com/category/games/stanfordle/';
+  return 'stanforddaily.com/category/games/stanfordle';
 }
 
 function buildShareText(guessCount) {
