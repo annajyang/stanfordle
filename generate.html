@@ -338,7 +338,7 @@
 
       const encoded   = btoa(word);
       const gameUrl   = `${BASE_URL}?w=${encoded}&p=${parseInt(num)}`;
-      const iframeCode = `<div style="max-width:520px; margin:0 auto;">\n  <iframe\n    src="${gameUrl}"\n    width="100%"\n    height="735"\n    frameborder="0"\n    scrolling="no"\n    style="border:none; border-radius:8px; overflow:hidden;"\n    title="Stanfordle #${parseInt(num)}"\n    allow="clipboard-write">\n  </iframe>\n</div>`;
+      const iframeCode = `<div style="max-width:520px; margin:0 auto;">\n  <iframe\n    src="${gameUrl}"\n    width="100%"\n    height="735"\n    frameborder="0"\n    style="border:none; border-radius:8px;"\n    title="Stanfordle #${parseInt(num)}"\n    allow="clipboard-write">\n  </iframe>\n</div>`;
 
       codeOutput.textContent = iframeCode;
       document.getElementById('meta-word').textContent    = word;
